@@ -10,6 +10,8 @@ import {
   responseHandler,
 } from "./app/middlewares/httpResponseHandler.middleware.js";
 import { dbConfig } from "./db.config.js";
+import passport from "passport";
+import "./app/strartegy/google.strategy.js";
 
 configDotenv();
 
@@ -21,6 +23,9 @@ app.use(morgan("combined"));
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api", mainRouter);
 
