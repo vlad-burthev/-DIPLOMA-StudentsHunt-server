@@ -9,6 +9,10 @@ export class ApiError extends Error {
   static badRequest(message) {
     return new ApiError(400, "Bad Request", message);
   }
+
+  static internalServerError(message) {
+    return new ApiError(500, "Internal Server Error", message);
+  }
 }
 
 export class ApiResponse {

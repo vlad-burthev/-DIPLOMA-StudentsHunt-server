@@ -8,5 +8,5 @@ import {
 export const adminRouter = new Router();
 
 adminRouter.get("/auth/google", authenticate);
-adminRouter.get("/auth/google/callback,", authenticateCallback);
+adminRouter.get("/google/callback", authenticateCallback);
 adminRouter.get("/logout", logout);

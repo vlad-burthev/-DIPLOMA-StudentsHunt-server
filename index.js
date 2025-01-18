@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-
+import session from "express-session";
 import { configDotenv } from "dotenv";
 import { mainRouter } from "./app/router/index.js";
 import {
@@ -12,6 +12,8 @@ import {
 import { dbConfig } from "./db.config.js";
 import passport from "passport";
 import "./app/strartegy/google.strategy.js";
+import "./app/modules/models.js";
+import { adminRouter } from "./app/modules/admin/admin.router.js";
 
 configDotenv();
 
@@ -24,13 +26,22 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(
+  session({
+    secret: process.env.CLIENT_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", mainRouter);
+app.use(adminRouter);
 
-app.use(responseHandler);
 app.use(errorHandler);
+app.use(responseHandler);
 
 const start = async () => {
   try {
