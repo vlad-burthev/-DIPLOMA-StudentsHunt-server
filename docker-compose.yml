@@ -1,45 +1,77 @@
-version: "3.9"
 services:
   admin:
     build:
       context: ./admin
     ports:
-      - "8888:8000" # Map container port 3000 to host port 3001
+      - "8888:8888"
     volumes:
-      - ./admin
+      - ./admin:/app
       - /node_modules
     environment:
       - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
 
   company:
     build:
       context: ./company
     ports:
-      - "8881:8881" # Map container port 3000 to host port 3002
+      - "8881:8881"
     volumes:
-      - ./company
+      - ./company:/app
       - /node_modules
     environment:
       - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
 
   student:
     build:
       context: ./student
     ports:
-      - "8882:8882" # Map container port 3000 to host port 3003
+      - "8882:8882"
     volumes:
-      - ./student
+      - ./student:/app
       - /node_modules
     environment:
       - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
 
   university:
     build:
       context: ./university
     ports:
-      - "8883:8883" # Map container port 3000 to host port 3003
+      - "8883:8883"
     volumes:
-      - ./university
+      - ./university:/app
       - /node_modules
     environment:
       - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

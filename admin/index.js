@@ -45,7 +45,11 @@ app.use(responseHandler);
 
 const start = async () => {
   try {
-    await dbConfig.authenticate();
+    await dbConfig
+      .authenticate()
+      .then(() => console.log("Database connected!"))
+      .catch((err) => console.log("Database connection failed:", err));
+
     await dbConfig.sync();
 
     app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));

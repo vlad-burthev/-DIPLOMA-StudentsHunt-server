@@ -1,18 +1,14 @@
-# Base image
+# Dockerfile for a Node.js service
 FROM node:18
 
-# Set working directory
-WORKDIR ./
+WORKDIR /app
 
-# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source code
 COPY . .
 
-# Expose the port your app runs on (if applicable)
 EXPOSE 8881
 
-# Command to start the app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
+

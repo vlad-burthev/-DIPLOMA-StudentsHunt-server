@@ -13,3 +13,8 @@ export const dbConfig = new Sequelize(
     port: process.env.DB_PORT,
   }
 );
+
+// export const dbConfig = new Sequelize(process.env.DB_URL, {
+//   dialect: "postgres",
+//   logging: console.log,
+// });
