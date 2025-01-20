@@ -1,6 +1,9 @@
 import passport from "passport";
 import { AdminModel } from "./admin.entity.js";
 import { ApiError, ApiResponse } from "../../httpResponse/httpResponse.js";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 export const authenticate = (req, res, next) => {
   passport.authenticate("google", {
@@ -21,9 +24,9 @@ export const authenticateCallback = (req, res, next) => {
           where: { email: user._json.email },
         });
         if (!admin) {
-          return next(
-            ApiError.badRequest("Admin not found", 404, "ADMIN_NOT_FOUND")
-          );
+          return res
+            .status(403)
+            .redirect(process.env.CLIENT_URL + "/auth/sign-in");
         }
 
         req.login(user, (err) => {
@@ -32,12 +35,8 @@ export const authenticateCallback = (req, res, next) => {
               ApiError.badRequest("Login failed", 500, "LOGIN_FAILED")
             );
           }
-
-          const response = ApiResponse.OK(200, "LOGIN_SUCCESS", {
-            message: `Welcome ${user.displayName}`,
-          });
-          res.locals.apiResponse = response;
-          next();
+          res.redirect(process.env.CLIENT_URL);
+           next();
         });
       } catch (error) {
         next(
