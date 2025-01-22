@@ -4,16 +4,10 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { configDotenv } from "dotenv";
-// import { mainRouter } from "./app/router/index.js";
-// import {
-//   errorHandler,
-//   responseHandler,
-// } from "./app/middlewares/httpResponseHandler.middleware.js";
-import { dbConfig } from "./db.config.js";
+
 import passport from "passport";
 import "./strartegy/google.strategy.js";
-// import "./app/modules/models.js";
-// import { adminRouter } from "./app/modules/admin/admin.router.js";
+import client from "./db.config.js";
 
 configDotenv();
 
@@ -45,10 +39,12 @@ app.use(passport.session());
 
 const start = async () => {
   try {
-    await dbConfig.authenticate();
-    await dbConfig.sync();
+    await client.connect();
+    console.log("[Student]: Connected to the database");
 
-    app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`[Student]: server started on PORT: ${PORT}`)
+    );
   } catch (error) {
     console.log(error);
   }

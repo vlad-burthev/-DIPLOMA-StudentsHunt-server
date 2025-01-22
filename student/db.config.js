@@ -1,15 +1,15 @@
+import pkg from "pg";
+
 import { configDotenv } from "dotenv";
-import { Sequelize } from "sequelize";
 
 configDotenv();
 
-export const dbConfig = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    dialect: process.env.DB_DIALECT,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-  }
-);
+const client = new pkg.Client({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+export default client;
