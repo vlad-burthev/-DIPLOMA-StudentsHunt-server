@@ -1,6 +1,7 @@
 import passport from "passport";
-import { AdminModel } from "./admin.entity.js";
+// import { AdminModel } from "./admin.entity.js";
 import { ApiError, ApiResponse } from "../../httpResponse/httpResponse.js";
+import client from "../../../db.config.js";
 
 export const authenticate = (req, res, next) => {
   passport.authenticate("google", {
@@ -17,32 +18,31 @@ export const authenticateCallback = (req, res, next) => {
         return res.redirect("/");
       }
       try {
-        const admin = await AdminModel.findOne({
-          where: { email: user._json.email },
-        });
+        const query = "SELECT * FROM admins WHERE email = $1";
+        const {
+          rows: [admin],
+        } = await client.query(query, [user._json.email]);
+
         if (!admin) {
-          return next(
-            ApiError.badRequest("Admin not found", 404, "ADMIN_NOT_FOUND")
-          );
+          return next(ApiError.BAD_REQUEST("Admin not found"));
         }
 
         req.login(user, (err) => {
           if (err) {
             return next(
-              ApiError.badRequest("Login failed", 500, "LOGIN_FAILED")
+              ApiError.BAD_REQUEST("Login failed", 500, "LOGIN_FAILED")
             );
           }
 
-          const response = ApiResponse.OK(200, "LOGIN_SUCCESS", {
+          const response = ApiResponse.OK("LOGIN_SUCCESS", {
             message: `Welcome ${user.displayName}`,
           });
           res.locals.apiResponse = response;
           next();
         });
       } catch (error) {
-        next(
-          ApiError.InternalServerError(error.message, 500, "INTERNAL_ERROR")
-        );
+        console.log(error);
+        next(ApiError.INTERNAL_SERVER_ERROR(error.message));
       }
     }
   )(req, res, next);

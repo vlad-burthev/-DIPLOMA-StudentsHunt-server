@@ -9,10 +9,9 @@ import {
   errorHandler,
   responseHandler,
 } from "./app/middlewares/httpResponseHandler.middleware.js";
-import { dbConfig } from "./db.config.js";
+import client from "./db.config.js";
 import passport from "passport";
 import "./app/strartegy/google.strategy.js";
-import "./app/modules/models.js";
 import { adminRouter } from "./app/modules/admin/admin.router.js";
 
 configDotenv();
@@ -45,14 +44,14 @@ app.use(responseHandler);
 
 const start = async () => {
   try {
-    await dbConfig
-      .authenticate()
-      .then(() => console.log("Database connected!"))
-      .catch((err) => console.log("Database connection failed:", err));
+    await client
+      .connect()
+      .then(() => console.log("[ADMIN]: Database connected!"))
+      .catch((err) => console.log("[ADMIN]: Database connection failed:", err));
 
-    await dbConfig.sync();
-
-    app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`[ADMIN]: server started on PORT: ${PORT}`)
+    );
   } catch (error) {
     console.log(error);
   }
