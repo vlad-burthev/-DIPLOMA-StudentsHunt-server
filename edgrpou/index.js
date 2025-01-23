@@ -4,14 +4,20 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { configDotenv } from "dotenv";
-
-import client from "./db.config.js";
+// import { mainRouter } from "./app/router/index.js";
+// import {
+//   errorHandler,
+//   responseHandler,
+// } from "./app/middlewares/httpResponseHandler.middleware.js";
+import client, { dbConfig } from "./db.config.js";
 import passport from "passport";
 import "./strartegy/google.strategy.js";
+// import "./app/modules/models.js";
+// import { adminRouter } from "./app/modules/admin/admin.router.js";
 
 configDotenv();
 
-const PORT = process.env.APP_PROT || 8001;
+const PORT = process.env.APP_PROT || 8005;
 
 const app = express();
 app.use(morgan("combined"));
@@ -41,7 +47,9 @@ const start = async () => {
   try {
     await client.connect();
 
-    app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`server EGRPOU started on PORT: ${PORT}`)
+    );
   } catch (error) {
     console.log(error);
   }

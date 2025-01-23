@@ -4,16 +4,9 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { configDotenv } from "dotenv";
-// import { mainRouter } from "./app/router/index.js";
-// import {
-//   errorHandler,
-//   responseHandler,
-// } from "./app/middlewares/httpResponseHandler.middleware.js";
-import { dbConfig } from "./db.config.js";
+import client from "./db.config.js";
 import passport from "passport";
 import "./strartegy/google.strategy.js";
-// import "./app/modules/models.js";
-// import { adminRouter } from "./app/modules/admin/admin.router.js";
 
 configDotenv();
 
@@ -37,16 +30,12 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use("/api", mainRouter);
-// app.use(adminRouter);
-
 // app.use(errorHandler);
 // app.use(responseHandler);
 
 const start = async () => {
   try {
-    await dbConfig.authenticate();
-    await dbConfig.sync();
+    await client.connect();
 
     app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
   } catch (error) {
