@@ -1,0 +1,77 @@
+services:
+  admin:
+    build:
+      context: ./admin
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./admin:/app
+      - /node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+
+  company:
+    build:
+      context: ./company
+    ports:
+      - "8881:8881"
+    volumes:
+      - ./company:/app
+      - /node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+
+  student:
+    build:
+      context: ./student
+    ports:
+      - "8882:8882"
+    volumes:
+      - ./student:/app
+      - /node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+
+  university:
+    build:
+      context: ./university
+    ports:
+      - "8883:8883"
+    volumes:
+      - ./university:/app
+      - /node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
