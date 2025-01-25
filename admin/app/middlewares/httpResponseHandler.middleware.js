@@ -1,4 +1,4 @@
-import { ApiError, ApiResponse } from "../httpResponse/httpResponse.js";
+import { ApiError, ApiResponse } from "../../../httpResponse/httpResponse.js";
 
 export const errorHandler = (err, req, res, next) => {
   if (err instanceof ApiError) {

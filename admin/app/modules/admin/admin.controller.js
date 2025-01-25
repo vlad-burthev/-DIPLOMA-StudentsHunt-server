@@ -1,6 +1,8 @@
 import passport from "passport";
-// import { AdminModel } from "./admin.entity.js";
-import { ApiError, ApiResponse } from "../../httpResponse/httpResponse.js";
+import {
+  ApiError,
+  ApiResponse,
+} from "../../../../httpResponse/httpResponse.js";
 import client from "../../../db.config.js";
 
 export const authenticate = (req, res, next) => {

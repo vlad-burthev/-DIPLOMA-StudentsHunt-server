@@ -1,0 +1,9 @@
+DROP TABLE admins;
+
+
+CREATE TABLE IF NOT EXISTS admins(
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    role_id SERIAL NOT NULL REFERENCES roles(id)
+);
+

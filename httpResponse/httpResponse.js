@@ -24,21 +24,22 @@ export class ApiError extends Error {
 }
 
 export class ApiResponse {
-  constructor(status = 200, code = "OK", data = null) {
+  constructor(res, status = 200, code = "OK", data = null) {
+    this.res = res;
     this.status = status;
     this.code = code;
     this.data = data;
   }
 
-  static OK(data = null) {
-    return new ApiResponse(200, "OK", data);
+  static OK(res, data = null) {
+    return new ApiResponse(res, 200, "OK", data);
   }
 
-  static CREATED(data = null) {
-    return new ApiResponse(201, "CREATED", data);
+  static CREATED(res, data = null) {
+    return new ApiResponse(res, 201, "CREATED", data);
   }
 
-  static NO_CONTENT() {
-    return new ApiResponse(204, "NO_CONTENT", null);
+  static NO_CONTENT(res) {
+    return new ApiResponse(res, 204, "NO_CONTENT", null);
   }
 }
