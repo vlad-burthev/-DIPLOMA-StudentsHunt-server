@@ -30,7 +30,6 @@ export class ApiResponse {
     this.code = code;
     this.data = data;
   }
-
   static OK(res, data = null) {
     return new ApiResponse(res, 200, "OK", data);
   }
