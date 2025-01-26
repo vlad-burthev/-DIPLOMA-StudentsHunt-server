@@ -1,20 +1,23 @@
--- DROP TABLE IF EXISTS students CASCADE;
--- DROP TABLE IF EXISTS students_personal_info CASCADE;
--- DROP TABLE IF EXISTS students_resume CASCADE;
--- DROP TABLE IF EXISTS students_language CASCADE;
--- DROP TABLE IF EXISTS students_projects CASCADE;
--- DROP TABLE IF EXISTS students_job_info CASCADE;
--- DROP TABLE IF EXISTS students_education_info CASCADE;
--- DROP TABLE IF EXISTS students_contact_info CASCADE;
+DROP TABLE IF EXISTS students_language CASCADE;
+DROP TABLE IF EXISTS students_projects CASCADE;
+DROP TABLE IF EXISTS students_job_info CASCADE;
+DROP TABLE IF EXISTS students_education_info CASCADE;
+DROP TABLE IF EXISTS students_contact_info CASCADE;
+DROP TABLE IF EXISTS students_resume CASCADE;
+DROP TABLE IF EXISTS students_personal_info CASCADE;
+DROP TABLE IF EXISTS students CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS students(
     id UUID PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
     role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
     is_activated BOOLEAN NOT NULL DEFAULT false,
     activation_link VARCHAR(255) NOT NULL UNIQUE,
-    is_verified BOOLEAN NOT NULL DEFAULT false
+    is_verified BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW(), 
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS students_personal_info(
@@ -36,7 +39,7 @@ CREATE TABLE IF NOT EXISTS students_resume(
 
 CREATE TABLE IF NOT EXISTS students_language( 
     id UUID PRIMARY KEY,
-    student_resume_id UUID NOT NULL REFERENCES student_resume(id) ON DELETE CASCADE,
+    student_resume_id UUID NOT NULL REFERENCES students_resume(id) ON DELETE CASCADE,
     language VARCHAR(50),
     lvl VARCHAR(2) NOT NULL CHECK(
         lvl IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')
@@ -64,9 +67,8 @@ CREATE TABLE IF NOT EXISTS students_job_info(
 CREATE TABLE IF NOT EXISTS students_education_info(
     id UUID PRIMARY KEY,
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    university_id UUID NOT NULL REFERENCES university(id) ON DELETE NO ACTION,
-    education VARCHAR(100),
-    university_id UUID NOT NULL
+    universities_id UUID NOT NULL REFERENCES universities(id) ON DELETE NO ACTION,
+    education VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS students_contact_info(

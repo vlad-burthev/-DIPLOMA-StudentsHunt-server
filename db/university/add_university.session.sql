@@ -1,5 +1,5 @@
 
-INSERT INTO university (id, logo, email, password, egrpou, name)
+INSERT INTO universities (id, logo, email, password, egrpou, name)
 VALUES
     ('123e4567-e89b-12d3-a456-426614174000', 'https://university1.com/logo.png', 'info@university1.com', 'qweqweqwe', '13475087', 'Kyiv National University'),
     ('223e4567-e89b-12d3-a456-426614174001', 'https://university2.com/logo.png', 'info@university2.com', 'qweqweqwe', '24586098', 'Lviv Polytechnic University'),
