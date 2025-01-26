@@ -1,5 +1,32 @@
 DROP TABLE IF EXISTS companies;
 
+
+CREATE TABLE IF NOT EXISTS companies(
+    id UUID PRIMARY KEY,
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL, 
+    egrpou CHAR(8) NOT NULL UNIQUE CHECK (egrpou ~ '^[0-9]{8}$'),
+    title VARCHAR(255) NOT NULL UNIQUE,
+    photo VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(), 
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE recruiters(
+    id UUID PRIMARY KEY,
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    surname VARCHAR(50) NOT NULL,
+    photo VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+
 CREATE TABLE IF NOT EXISTS vacancies(
     id UUID PRIMARY KEY,
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -15,5 +42,5 @@ CREATE TABLE IF NOT EXISTS vacancies(
     created_at TIMESTAMP DEFAULT NOW(), 
     updated_at TIMESTAMP DEFAULT NOW(),
     work_type INTEGER NOT NULL REFERENCES work_types(id) ON DELETE NO ACTION,
-    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION
 );
