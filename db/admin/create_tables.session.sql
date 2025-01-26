@@ -4,6 +4,6 @@ DROP TABLE admins;
 CREATE TABLE IF NOT EXISTS admins(
     id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
-    role_id SERIAL NOT NULL REFERENCES roles(id)
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION
 );
 
