@@ -8,6 +8,11 @@ import { configDotenv } from "dotenv";
 import client from "./db.config.js";
 import passport from "passport";
 import "./strartegy/google.strategy.js";
+import { mainRouter } from "./app/router/main-router.js";
+import {
+  errorHandler,
+  responseHandler,
+} from "../httpResponse/httpResponseHandler.middleware.js";
 
 configDotenv();
 
@@ -31,15 +36,18 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use("/api", mainRouter);
+app.use("/api", mainRouter);
 // app.use(adminRouter);
 
-// app.use(errorHandler);
-// app.use(responseHandler);
+app.use(errorHandler);
+app.use(responseHandler);
 
 const start = async () => {
   try {
-    await client.connect();
+    await client
+      .connect()
+      .then(() => console.log("[ADMIN]: Database connected!"))
+      .catch((err) => console.log("[ADMIN]: Database connection failed:", err));
 
     app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
   } catch (error) {
