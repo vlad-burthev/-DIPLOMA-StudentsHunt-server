@@ -19,7 +19,7 @@ configDotenv();
 const PORT = process.env.APP_PROT || 8001;
 
 const app = express();
-app.use(morgan("combined"));
+// app.use(morgan("combined"));
 
 app.use(cors());
 app.use(express.json());
@@ -46,10 +46,14 @@ const start = async () => {
   try {
     await client
       .connect()
-      .then(() => console.log("[ADMIN]: Database connected!"))
-      .catch((err) => console.log("[ADMIN]: Database connection failed:", err));
+      .then(() => console.log("[Company]: Database connected!"))
+      .catch((err) =>
+        console.log("[Company]: Database connection failed:", err)
+      );
 
-    app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`[Company]: server started on PORT: ${PORT}`)
+    );
   } catch (error) {
     console.log(error);
   }

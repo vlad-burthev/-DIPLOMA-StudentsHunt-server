@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "dependencies": {
+    "cloudinary": "^2.5.1",
+    "dotenv": "^16.4.7",
+    "sharp": "^0.33.5",
+    "uuid": "^11.0.5"
+  }
+}
