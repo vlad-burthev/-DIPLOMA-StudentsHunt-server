@@ -23,6 +23,7 @@
   "homepage": "https://github.com/vlad-burthev/-DIPLOMA-Students-Hunt-server#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
@@ -30,6 +31,7 @@
     "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.13.1",

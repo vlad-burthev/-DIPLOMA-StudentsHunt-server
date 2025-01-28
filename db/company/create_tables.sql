@@ -1,9 +1,11 @@
+DROP TABLE IF EXISTS vacancies;
+DROP TABLE IF EXISTS recruiters;
 DROP TABLE IF EXISTS companies;
 
 
 CREATE TABLE IF NOT EXISTS companies(
     id UUID PRIMARY KEY,
-    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    role_id INTEGER NOT NULL REFERENCES roles(id) DEFAULT 2,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL, 
     egrpou CHAR(8) NOT NULL UNIQUE CHECK (egrpou ~ '^[0-9]{8}$'),
@@ -25,7 +27,6 @@ CREATE TABLE recruiters(
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
-
 
 CREATE TABLE IF NOT EXISTS vacancies(
     id UUID PRIMARY KEY,

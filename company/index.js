@@ -8,13 +8,18 @@ import { configDotenv } from "dotenv";
 import client from "./db.config.js";
 import passport from "passport";
 import "./strartegy/google.strategy.js";
+import { mainRouter } from "./app/router/main-router.js";
+import {
+  errorHandler,
+  responseHandler,
+} from "../httpResponse/httpResponseHandler.middleware.js";
 
 configDotenv();
 
 const PORT = process.env.APP_PROT || 8001;
 
 const app = express();
-app.use(morgan("combined"));
+// app.use(morgan("combined"));
 
 app.use(cors());
 app.use(express.json());
@@ -31,17 +36,24 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use("/api", mainRouter);
+app.use("/api", mainRouter);
 // app.use(adminRouter);
 
-// app.use(errorHandler);
-// app.use(responseHandler);
+app.use(errorHandler);
+app.use(responseHandler);
 
 const start = async () => {
   try {
-    await client.connect();
+    await client
+      .connect()
+      .then(() => console.log("[Company]: Database connected!"))
+      .catch((err) =>
+        console.log("[Company]: Database connection failed:", err)
+      );
 
-    app.listen(PORT, () => console.log(`server started on PORT: ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`[Company]: server started on PORT: ${PORT}`)
+    );
   } catch (error) {
     console.log(error);
   }
