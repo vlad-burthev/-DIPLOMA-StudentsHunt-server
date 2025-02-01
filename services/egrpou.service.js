@@ -24,8 +24,6 @@ export const checkEGRPOUCode = async (egrpouCode) => {
       return new Error(jsonData.error);
     }
 
-    console.log(jsonData.export.company);
-
     return {
       egrpou: jsonData.export.company.$.egrpou,
       name: jsonData.export.company.$.name,
@@ -35,6 +33,7 @@ export const checkEGRPOUCode = async (egrpouCode) => {
       kved: jsonData.export.company.$.kved,
       inn: jsonData.export.company.$.inn,
       inn_date: jsonData.export.company.$.inn_date,
+      last_update: jsonData.export.company.$.last_update,
     };
   } catch (error) {
     return new Error(error.message);

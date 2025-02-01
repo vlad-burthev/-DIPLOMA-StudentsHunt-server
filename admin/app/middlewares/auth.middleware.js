@@ -1,12 +1,12 @@
 const jwt = require("jsonwebtoken");
 const { ApiError } = require("../../../httpResponse/httpResponse");
 
-const checkRoleMiddleware = (req, res, next) => {
+export const checkRoleMiddleware = (req, res, next) => {
   if (req.method === "OPTIONS") {
     next();
   }
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.headers.authorization;
     if (!token) {
       return next(ApiError.UNAUTHORIZED("token expired"));
     }

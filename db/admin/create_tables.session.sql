@@ -2,7 +2,7 @@ DROP TABLE admins;
 
 
 CREATE TABLE IF NOT EXISTS admins(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL,
     role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION
 );

@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS universities;
 
 CREATE TABLE IF NOT EXISTS universities(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     logo VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
