@@ -12,8 +12,8 @@ import { MailService } from "../../../../services/mail.service.js";
 import { validationResult } from "express-validator";
 configDotenv();
 
-export class CompanyController {
-  static async createCompany(req, res, next) {
+export class UniversityController {
+  static async createUniversity(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -21,18 +21,17 @@ export class CompanyController {
       }
 
       const queryGetCompanyByTitle = `
-        SELECT * FROM companies_info
-        WHERE title = $1
-      `;
+          SELECT * FROM companies_info
+          WHERE title = $1
+        `;
 
       const queryGetCompanyByEgrpou = `
-        SELECT * FROM egrpou_info
-        WHERE egrpou = $1
-      `;
+          SELECT * FROM egrpou_info
+          WHERE egrpou = $1
+        `;
 
-      const { accounts } = await CompanyController.checkRegistratedAccByEmail(
-        req.email
-      );
+      const { companyByEmail } =
+        await CompanyController.checkRegistratedAccByEmail(req.body.email);
 
       const { rowCount: rowCountByInfo } = await client.query(
         queryGetCompanyByTitle,
@@ -44,9 +43,11 @@ export class CompanyController {
         [req.body.egrpou]
       );
 
-      if (accounts > 0 || rowCountByInfo > 0 || rowCountByEgrpou > 0) {
+      if (companyByEmail > 0 || rowCountByInfo > 0 || rowCountByEgrpou > 0) {
         return next(
-          ApiError.UNAUTHORIZED("Компанія з таким email або назвою вже існує")
+          ApiError.UNAUTHORIZED(
+            "Аккаунт з таким email або назвою чи ЄДРПОУ вже існує"
+          )
         );
       }
 
@@ -79,12 +80,12 @@ export class CompanyController {
       }
 
       const queryInsertCompany = `
-        INSERT INTO companies (
-          email, password, activationLink
-        ) VALUES (
-          $1, $2, $3
-        ) RETURNING *;
-      `;
+          INSERT INTO companies (
+            email, password, activationLink
+          ) VALUES (
+            $1, $2, $3
+          ) RETURNING *;
+        `;
 
       const values = [
         req.body.email,
@@ -102,23 +103,23 @@ export class CompanyController {
 
       await client.query(
         `
-        INSERT INTO egrpou_info (
-          company_id, egrpou, name, name_short, address, director, kved, inn, inn_date, last_update
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-        ) RETURNING *;
-        `,
+          INSERT INTO egrpou_info (
+            company_id, egrpou, name, name_short, address, director, kved, inn, inn_date, last_update
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+          ) RETURNING *;
+          `,
         [rows[0].id, ...Object.values(egrpouInfo)]
       );
 
       await client.query(
         `
-        INSERT INTO companies_info (
-          company_id, phone, title, photo, description
-        ) VALUES (
-          $1, $2, $3, $4, $5
-        ) RETURNING *;
-        `,
+          INSERT INTO companies_info (
+            company_id, phone, title, photo, description
+          ) VALUES (
+            $1, $2, $3, $4, $5
+          ) RETURNING *;
+          `,
         [
           rows[0].id,
           req.body.phone,
@@ -149,7 +150,7 @@ export class CompanyController {
     }
   }
 
-  static async loginCompany(req, res, next) {
+  static async loginUniversity(req, res, next) {
     try {
       const { email, password } = req.body;
       const existedCompany = await CompanyController.getCompanyByEmail(email);
@@ -185,48 +186,7 @@ export class CompanyController {
     }
   }
 
-  static async createRecruiter(req, res, next) {
-    try {
-      const { email, password, name, surname } = req.body;
-      const recruiterPhoto = req.file;
-
-      const findRecruiterQuery = `
-      SELECT * FROM recruiters WHERE email = $1
-      `;
-
-      const existedRecruiter = client.query(findRecruiterQuery, [email]);
-      if (existedRecruiter) {
-        return next(ApiError.BAD_REQUEST("Рекрутер з таким email вже існує"));
-      }
-
-      const createRecruiterQuery = `
-          INSERT INTO companies (
-          company_id, email, password, name, surname, photo
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6
-        ) RETURNING *;
-      `;
-
-      console.log(req.user);
-
-      const values = [
-        req.user.id,
-        email,
-        bcrypt.hashSync(password, 5),
-        name,
-        surname,
-        recruiterPhoto,
-      ];
-
-      await client.query(createRecruiterQuery, values);
-
-      return ApiResponse.CREATED(res);
-    } catch (error) {
-      return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
-    }
-  }
-
-  static async activateCompany(req, res, next) {
+  static async activateUnivesrity(req, res, next) {
     try {
       const { activateLink } = req.params;
       const email = jwt.decode(activateLink, process.env.JWT_SECRET_KEY);
@@ -266,15 +226,11 @@ export class CompanyController {
   }
 
   //helpers
-  static async getCompanyByEmail(email) {
+  static async getUniversityByEmail(email) {
     const { rows } = await client.query(
-      `SELECT * FROM companies WHERE email = $1`,
+      `SELECT * FROM universities WHERE email = $1`,
       [email]
     );
-
-    if (!rows[0]) {
-      throw ApiError.BAD_REQUEST("Компанія не знайдена");
-    }
 
     return rows[0];
   }

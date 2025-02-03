@@ -16,21 +16,21 @@ const validateCorporateEmail = (value) => {
 export const createCompanyValidator = [
   check("title")
     .isLength({ min: 4, max: 254 })
-    .withMessage("Назва компанії повинна бути довжиною від 4 до 254 символів"),
+    .withMessage("Title должен быть длиной от 4 до 254 символов"),
   check("phone")
     .matches(/^\+380\d{9}$/)
-    .withMessage("Номер тел. повинен відповідати формату +380123456789"),
+    .withMessage("Phone должен соответствовать формату +380123456789"),
   check("egrpou")
     .matches(/^\d{8}$/)
-    .withMessage("Код ЄДРПОУ повинен містити рівно 8 цифр"),
+    .withMessage("ЄДРПОУ должен содержать ровно 8 цифр"),
   check("description")
     .isLength({ min: 26, max: 999 })
-    .withMessage("Опис повинен бути довжиною від 26 до 999 символів"),
+    .withMessage("Description должен быть длиной от 26 до 999 символов"),
   check("email")
     .isEmail()
-    .withMessage("Некоректний формат email")
+    .withMessage("Некорректный формат email")
     .custom(validateCorporateEmail),
   check("password")
     .isLength({ min: 7 })
-    .withMessage("Пароль повинен містити більше 5 символів"),
+    .withMessage("Password должен быть более 6 символов"),
 ];
