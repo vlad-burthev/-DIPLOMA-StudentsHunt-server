@@ -21,7 +21,12 @@ const PORT = process.env.APP_PROT || 8001;
 const app = express();
 // app.use(morgan("combined"));
 
-app.use(cors());
+const corsOptions = {
+  origin: "http://localhost:5173", // или массив разрешённых источников
+  credentials: true, // разрешаем передачу куки
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 

@@ -3,32 +3,52 @@ import {
   ApiResponse,
 } from "../../../../httpResponse/httpResponse.js";
 import client from "../../../db.config.js";
-import * as uuid from "uuid";
 import * as bcrypt from "bcrypt";
 import CloudinaryService from "../../../../services/cloudnary.service.js";
 import { checkEGRPOUCode } from "../../../../services/egrpou.service.js";
 import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import { MailService } from "../../../../services/mail.service.js";
+import { validationResult } from "express-validator";
 configDotenv();
 
 export class CompanyController {
   static async createCompany(req, res, next) {
     try {
-      const queryGetCompanyByParams = `
-        SELECT * FROM companies 
-        WHERE email = $1 OR title = $2 OR egrpou = $3
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const queryGetCompanyByTitle = `
+        SELECT * FROM companies_info
+        WHERE title = $1
       `;
 
-      const { rowCount } = await client.query(queryGetCompanyByParams, [
-        req.body.email,
-        req.body.title,
-        req.body.egrpou,
-      ]);
+      const queryGetCompanyByEgrpou = `
+        SELECT * FROM egrpou_info
+        WHERE egrpou = $1
+      `;
 
-      if (rowCount > 0) {
+      const { companyByEmail } = await CompanyController.getCompanyByEmail();
+
+      const { rowCount: rowCountByInfo } = await client.query(
+        queryGetCompanyByTitle,
+        [req.body.title]
+      );
+
+      const { rowCount: rowCountByEgrpou } = await client.query(
+        queryGetCompanyByEgrpou,
+        [req.body.egrpou]
+      );
+
+      if (
+        companyByEmail.length > 0 ||
+        rowCountByInfo > 0 ||
+        rowCountByEgrpou > 0
+      ) {
         return next(
-          ApiError.UNAUTHORIZED("Компанія з таким email або назвою вже існує ")
+          ApiError.UNAUTHORIZED("Компанія з таким email або назвою вже існує")
         );
       }
 
@@ -43,49 +63,45 @@ export class CompanyController {
       }
 
       if (!req.file) {
-        return next(ApiError.BAD_REQUEST("File path is missing or invalid"));
+        return next(ApiError.BAD_REQUEST("Файл не знайдено"));
       }
 
       let photoUrl = null;
-      if (req.file) {
-        try {
-          const result = await CloudinaryService.uploadImage(
-            req.file,
-            "company",
-            "image"
-          );
-          photoUrl = result.secure_url;
-        } catch (uploadError) {
-          return next(ApiError.INTERNAL_SERVER_ERROR("Ошибка загрузки фото"));
-        }
-      } else {
-        return next(ApiError.BAD_REQUEST("Файл не найден"));
+      try {
+        const result = await CloudinaryService.uploadImage(
+          req.file,
+          "company",
+          "image"
+        );
+        photoUrl = result.secure_url;
+      } catch (uploadError) {
+        return next(
+          ApiError.INTERNAL_SERVER_ERROR("Помилка завантаження фото")
+        );
       }
 
       const queryInsertCompany = `
         INSERT INTO companies (
-          email, password, egrpou, title, photo, activationLink
+          email, password, activationLink
         ) VALUES (
-          $1, $2, $3, $4, $5, $6
+          $1, $2, $3
         ) RETURNING *;
       `;
 
       const values = [
         req.body.email,
         bcrypt.hashSync(req.body.password, 5),
-        req.body.egrpou,
-        req.body.title,
-        photoUrl,
         activationLink,
       ];
 
       const { rows } = await client.query(queryInsertCompany, values);
+
       // Отправка письма активации
       await new MailService().sendActivationMail(
         req.body.email,
         `${process.env.API_URL}api/company/activate/${activationLink}`
       );
-      console.log(egrpouInfo);
+
       await client.query(
         `
         INSERT INTO egrpou_info (
@@ -95,6 +111,23 @@ export class CompanyController {
         ) RETURNING *;
         `,
         [rows[0].id, ...Object.values(egrpouInfo)]
+      );
+
+      await client.query(
+        `
+        INSERT INTO companies_info (
+          company_id, phone, title, photo, description
+        ) VALUES (
+          $1, $2, $3, $4, $5
+        ) RETURNING *;
+        `,
+        [
+          rows[0].id,
+          req.body.phone,
+          req.body.title,
+          photoUrl, // Используем photoUrl
+          req.body.description,
+        ]
       );
 
       const token = jwt.sign(rows[0], process.env.JWT_SECRET_KEY, {
@@ -113,7 +146,7 @@ export class CompanyController {
 
       return ApiResponse.OK(res, rows[0]);
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message); // Используем console.error для ошибок
       return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
     }
   }
@@ -121,11 +154,15 @@ export class CompanyController {
   static async loginCompany(req, res, next) {
     try {
       const { email, password } = req.body;
-      const existedCompany = await this.getCompanyByEmail(email);
+      const existedCompany = await CompanyController.getCompanyByEmail(email);
       const checkPass = bcrypt.compareSync(password, existedCompany.password);
 
       if (!existedCompany || !checkPass) {
         return next(ApiError.UNAUTHORIZED("Неправильний email або пароль"));
+      }
+
+      if (!existedCompany.activated) {
+        return next(ApiError.UNAUTHORIZED("Підтвердіть email"));
       }
 
       const token = jwt.sign(existedCompany, process.env.JWT_SECRET_KEY, {
@@ -238,7 +275,7 @@ export class CompanyController {
     );
 
     if (!rows[0]) {
-      return next(ApiError.BAD_REQUEST("Компанія не знайдена"));
+      throw ApiError.BAD_REQUEST("Компанія не знайдена");
     }
 
     return rows[0];
