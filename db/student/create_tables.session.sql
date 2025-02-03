@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS students CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS students(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS students(
 );
 
 CREATE TABLE IF NOT EXISTS students_personal_info(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     photo VARCHAR(255) UNIQUE,
     resume_file VARCHAR(255) UNIQUE,
@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS students_personal_info(
 );
 
 CREATE TABLE IF NOT EXISTS students_resume(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     about TEXT NOT NULL,
     skills TEXT[] NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS students_language( 
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_resume_id UUID NOT NULL REFERENCES students_resume(id) ON DELETE CASCADE,
     language VARCHAR(50),
     lvl VARCHAR(2) NOT NULL CHECK(
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS students_language(
 );
 
 CREATE TABLE IF NOT EXISTS students_projects(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     title VARCHAR(50) NOT NULL,
     description TEXT NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS students_projects(
 
 
 CREATE TABLE IF NOT EXISTS students_job_info(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     job_status VARCHAR(20) CHECK(
         job_status IN ('work', 'search', NULL)
@@ -65,14 +65,14 @@ CREATE TABLE IF NOT EXISTS students_job_info(
 );
 
 CREATE TABLE IF NOT EXISTS students_education_info(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     universities_id UUID NOT NULL REFERENCES universities(id) ON DELETE NO ACTION,
     education VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS students_contact_info(
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     linkedin VARCHAR(255),
     telegram VARCHAR(255),
