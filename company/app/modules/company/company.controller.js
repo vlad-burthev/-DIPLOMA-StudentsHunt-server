@@ -181,7 +181,7 @@ export class CompanyController {
     }
   }
 
-  /**
+  /*
    * Логин компании
    */
   static async loginCompany(req, res, next) {
