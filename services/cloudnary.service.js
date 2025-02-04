@@ -46,6 +46,24 @@ class CloudinaryService {
       throw new Error(`Ошибка обработки изображения: ${error.message}`);
     }
   }
+
+  // Метод загрузки изображения
+  static async deleteImage(publicId, resourceType = "image") {
+    try {
+      const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: resourceType,
+      });
+
+      if (result.result !== "ok") {
+        throw new Error(`Ошибка удаления изображения: ${result.result}`);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Cloudinary delete error details:", error);
+      throw new Error(`Ошибка удаления изображения: ${error.message}`);
+    }
+  }
 }
 
 export default CloudinaryService;

@@ -6,7 +6,7 @@ import { createCompanyValidator } from "./company.dto.js";
 import {
   createRecruiterService,
   createRecruiterValidator,
-} from "../common/services/createRecruiter.service.js";
+} from "../..//common/services/createRecruiter.service.js";
 
 export const companyRoutes = new Router();
 const storage = multer.memoryStorage();
