@@ -34,17 +34,21 @@ export class CompanyController {
         req.email
       );
 
-      const { rowCount: rowCountByInfo } = await client.query(
+      const { rows: rowCountByInfo } = await client.query(
         queryGetCompanyByTitle,
         [req.body.title]
       );
 
-      const { rowCount: rowCountByEgrpou } = await client.query(
+      const { rows: rowCountByEgrpou } = await client.query(
         queryGetCompanyByEgrpou,
         [req.body.egrpou]
       );
 
-      if (accounts > 0 || rowCountByInfo > 0 || rowCountByEgrpou > 0) {
+      if (
+        accounts > 0 ||
+        rowCountByInfo.length > 0 ||
+        rowCountByEgrpou.length > 0
+      ) {
         return next(
           ApiError.UNAUTHORIZED("Компанія з таким email або назвою вже існує")
         );
@@ -123,7 +127,7 @@ export class CompanyController {
           rows[0].id,
           req.body.phone,
           req.body.title,
-          photoUrl, // Используем photoUrl
+          photoUrl,
           req.body.description,
         ]
       );
@@ -135,7 +139,7 @@ export class CompanyController {
       if (!token) {
         return next(ApiError.BAD_REQUEST("Не вдалося створити токен"));
       }
-
+      console.log(token);
       res.cookie("token", token, {
         httpOnly: true,
         maxAge: 3600000,
@@ -265,6 +269,8 @@ export class CompanyController {
     }
   }
 
+  static async createRecruiter(req, res, next) {}
+
   //helpers
   static async getCompanyByEmail(email) {
     const { rows } = await client.query(
@@ -280,16 +286,16 @@ export class CompanyController {
   }
 
   static async checkRegistratedAccByEmail(email) {
-    const { rowCount: universities } = await client.query(
+    const { rows: universities } = await client.query(
       `SELECT * FROM universities WHERE email = $1`,
       [email]
     );
 
-    const { rowCount: companies } = await client.query(
+    const { rows: companies } = await client.query(
       `SELECT * FROM companies WHERE email = $1`,
       [email]
     );
 
-    return universities + companies;
+    return universities.length + companies.length;
   }
 }

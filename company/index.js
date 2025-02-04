@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
-import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { configDotenv } from "dotenv";
 
 import client from "./db.config.js";
 import passport from "passport";
-import "./strartegy/google.strategy.js";
+import "./app/strartegy/google.strategy.js";
 import { mainRouter } from "./app/router/main-router.js";
 import {
   errorHandler,

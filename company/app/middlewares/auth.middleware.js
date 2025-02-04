@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 configDotenv();
 
@@ -7,7 +7,7 @@ export const checkAuthMiddleware = (req, res, next) => {
     next();
   }
   try {
-    const token = req.headers.authorization;
+    const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: "Не авторизован" });
     }
@@ -15,6 +15,6 @@ export const checkAuthMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (e) {
-    res.status(401).json({ message: "Не авторизован" });
+    res.status(401).json({ message: e.message });
   }
 };
