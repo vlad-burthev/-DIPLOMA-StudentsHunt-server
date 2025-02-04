@@ -18,8 +18,6 @@ export class CompanyController {
    * Создание компании с использованием транзакции
    */
   static async createCompany(req, res, next) {
-    const clientDb = client;
-    const transactionClient = await clientDb.connect();
     try {
       // Проверка валидности запроса
       const errors = validationResult(req);
@@ -40,11 +38,10 @@ export class CompanyController {
         req.body.email
       );
 
-      const { rows: rowsByTitle } = await transactionClient.query(
-        queryGetCompanyByTitle,
-        [req.body.title]
-      );
-      const { rows: rowsByEgrpou } = await transactionClient.query(
+      const { rows: rowsByTitle } = await client.query(queryGetCompanyByTitle, [
+        req.body.title,
+      ]);
+      const { rows: rowsByEgrpou } = await client.query(
         queryGetCompanyByEgrpou,
         [req.body.egrpou]
       );
@@ -83,7 +80,7 @@ export class CompanyController {
       }
 
       // Начало транзакции
-      await transactionClient.query("BEGIN");
+      await client.query("BEGIN");
 
       // Генерация активационной ссылки (используем подписанный токен)
       const activationLink = jwt.sign(
@@ -101,7 +98,7 @@ export class CompanyController {
         VALUES ($1, $2, $3)
         RETURNING *;
       `;
-      const { rows } = await transactionClient.query(queryInsertCompany, [
+      const { rows } = await client.query(queryInsertCompany, [
         req.body.email,
         hashedPassword,
         activationLink,
@@ -125,7 +122,7 @@ export class CompanyController {
         egrpouInfo.inn_date,
         egrpouInfo.last_update,
       ];
-      await transactionClient.query(
+      await client.query(
         `
         INSERT INTO egrpou_info (
           company_id, egrpou, name, name_short, address, director, kved, inn, inn_date, last_update
@@ -137,7 +134,7 @@ export class CompanyController {
       );
 
       // Вставка дополнительной информации о компании
-      await transactionClient.query(
+      await client.query(
         `
         INSERT INTO companies_info (company_id, phone, title, photo, description)
         VALUES ($1, $2, $3, $4, $5);
@@ -152,11 +149,15 @@ export class CompanyController {
       );
 
       // Фиксируем транзакцию
-      await transactionClient.query("COMMIT");
+      await client.query("COMMIT");
 
       // Генерация токена для сессии
       const token = jwt.sign(
-        { id: newCompany.id, email: newCompany.email },
+        {
+          id: newCompany.id,
+          email: newCompany.email,
+          role_id: newCompany.role_id,
+        },
         process.env.JWT_SECRET_KEY,
         {
           expiresIn: "1h",
@@ -174,11 +175,9 @@ export class CompanyController {
 
       return ApiResponse.OK(res, newCompany);
     } catch (error) {
-      await transactionClient.query("ROLLBACK");
+      await client.query("ROLLBACK");
       console.error("Ошибка создания компании:", error.message);
       return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
-    } finally {
-      transactionClient.release();
     }
   }
 
@@ -207,7 +206,11 @@ export class CompanyController {
       }
 
       const token = jwt.sign(
-        { id: existedCompany.id, email: existedCompany.email },
+        {
+          id: existedCompany.id,
+          email: existedCompany.email,
+          role_id: existedCompany.role_id,
+        },
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
       );
@@ -219,6 +222,8 @@ export class CompanyController {
         maxAge: 3600000,
         sameSite: "strict",
       });
+
+      console.log(token);
 
       return res.status(200).json({ message: "Успешный вход" });
     } catch (error) {

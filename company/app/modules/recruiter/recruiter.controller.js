@@ -48,10 +48,14 @@ export class RecruiterController {
       const tokenPayload = {
         id: existedRecruiter.id,
         email: existedRecruiter.email,
+        company_id: existedRecruiter.company_id,
       };
+
       const token = jwt.sign(tokenPayload, process.env.JWT_SECRET_KEY, {
         expiresIn: "1h",
       });
+
+      console.log(token);
 
       req.user = existedRecruiter;
 
