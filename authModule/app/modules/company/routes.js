@@ -7,7 +7,6 @@ import {
   createRecruiterService,
   createRecruiterValidator,
 } from "../..//common/services/createRecruiter.service.js";
-import { checkUserAuth } from "../../../../services/checkUserAuth.service.js";
 
 export const companyRoutes = new Router();
 const storage = multer.memoryStorage();
@@ -30,4 +29,3 @@ companyRoutes.post(
   createRecruiterValidator,
   createRecruiterService
 );
-companyRoutes.get("/check", checkUserAuth);
