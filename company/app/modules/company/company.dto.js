@@ -1,5 +1,5 @@
 import { check } from "express-validator";
-import { publicEmailDomains } from "../../../../commom/commonData/publicMails.js";
+import { publicEmailDomains } from "../../../../common/commonData/publicMails.js";
 
 const validateCorporateEmail = (value) => {
   const parts = value.split("@");

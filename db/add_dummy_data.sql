@@ -1,15 +1,15 @@
-INSERT INTO universities (id, logo, email, password, egrpou, name)
+INSERT INTO universities (id, logo, email, password, role_id, egrpou, name)
 VALUES 
-    (gen_random_uuid(), 'logo1.png', 'university1@example.com', 'password1', '12345678', 'University One'),
-    (gen_random_uuid(), 'logo2.png', 'university2@example.com', 'password2', '23456789', 'University Two'),
-    (gen_random_uuid(), 'logo3.png', 'university3@example.com', 'password3', '34567890', 'University Three'),
-    (gen_random_uuid(), 'logo4.png', 'university4@example.com', 'password4', '45678901', 'University Four'),
-    (gen_random_uuid(), 'logo5.png', 'university5@example.com', 'password5', '56789012', 'University Five'),
-    (gen_random_uuid(), 'logo6.png', 'university6@example.com', 'password6', '67890123', 'University Six'),
-    (gen_random_uuid(), 'logo7.png', 'university7@example.com', 'password7', '78901234', 'University Seven'),
-    (gen_random_uuid(), 'logo8.png', 'university8@example.com', 'password8', '89012345', 'University Eight'),
-    (gen_random_uuid(), 'logo9.png', 'university9@example.com', 'password9', '90123456', 'University Nine'),
-    (gen_random_uuid(), 'logo10.png', 'university10@example.com', 'password10', '01234567', 'University Ten');
+    (gen_random_uuid(), 'logo1.png', 'university1@example.com', 5, 'password1', '12345678', 'University One'),
+    (gen_random_uuid(), 'logo2.png', 'university2@example.com', 5, 'password2', '23456789', 'University Two'),
+    (gen_random_uuid(), 'logo3.png', 'university3@example.com', 5, 'password3', '34567890', 'University Three'),
+    (gen_random_uuid(), 'logo4.png', 'university4@example.com', 5, 'password4', '45678901', 'University Four'),
+    (gen_random_uuid(), 'logo5.png', 'university5@example.com', 5, 'password5', '56789012', 'University Five'),
+    (gen_random_uuid(), 'logo6.png', 'university6@example.com', 5, 'password6', '67890123', 'University Six'),
+    (gen_random_uuid(), 'logo7.png', 'university7@example.com', 5, 'password7', '78901234', 'University Seven'),
+    (gen_random_uuid(), 'logo8.png', 'university8@example.com', 5, 'password8', '89012345', 'University Eight'),
+    (gen_random_uuid(), 'logo9.png', 'university9@example.com', 5, 'password9', '90123456', 'University Nine'),
+    (gen_random_uuid(), 'logo10.png', 'university10@example.com', 5, 'password10', '01234567', 'University Ten');
 
 INSERT INTO students (id, email, password, role_id, is_activated, activation_link, is_verified)
 VALUES 

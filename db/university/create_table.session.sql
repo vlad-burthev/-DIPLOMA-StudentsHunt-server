@@ -1,10 +1,11 @@
-DROP TABLE IF EXISTS universities;
+DROP TABLE IF EXISTS universities CASCADE;
 
 CREATE TABLE IF NOT EXISTS universities(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     logo VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
     egrpou CHAR(8) NOT NULL UNIQUE CHECK (egrpou ~ '^[0-9]{8}$'),
     name VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT NOW(), 

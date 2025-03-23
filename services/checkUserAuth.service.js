@@ -1,4 +1,4 @@
-import { getUserFromAllTables } from "../commom/helpers/getUserFromAllTables.helpers.js";
+import { getUserFromAllTables } from "../common/helpers/getUserFromAllTables.helpers.js";
 import { ApiError, ApiResponse } from "../httpResponse/httpResponse.js";
 import jwt from "jsonwebtoken";
 

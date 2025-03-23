@@ -6,7 +6,7 @@ import {
   ApiError,
   ApiResponse,
 } from "../../../../httpResponse/httpResponse.js";
-import { publicEmailDomains } from "../../../../commom/commonData/publicMails.js";
+import { publicEmailDomains } from "../../../../common/commonData/publicMails.js";
 
 export const createRecruiterService = async (req, res, next) => {
   let cloudinaryPublicId = null;

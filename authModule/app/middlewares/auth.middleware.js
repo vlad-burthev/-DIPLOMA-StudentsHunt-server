@@ -4,8 +4,9 @@ configDotenv();
 
 export const checkAuthMiddleware = (req, res, next) => {
   if (req.method === "OPTIONS") {
-    next();
+    return next();
   }
+
   try {
     const token = req.cookies.token;
     if (!token) {

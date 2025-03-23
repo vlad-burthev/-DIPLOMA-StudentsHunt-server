@@ -149,61 +149,6 @@ export class RecruiterController {
   }
 
   /**
-   * Получение всех рекрутеров 1 компании
-   */
-  static async getAllCompanyRecruiters(req, res, next) {
-    try {
-      const { id } = req.user;
-      const getAllRecruitersFromCompanyQuery = `
-        SELECT id, email, name, surname, photo, created_at as date FROM recruiters WHERE company_id = $1;
-      `;
-
-      const { rows } = await client.query(getAllRecruitersFromCompanyQuery, [
-        id,
-      ]);
-
-      return ApiResponse.OK(res, rows);
-    } catch (error) {
-      console.error(
-        "Ошибка при получении всех рекрутёров конкретной компании:",
-        error.message
-      );
-      return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
-    }
-  }
-
-  /**
-   * Удаление рекрутера
-   */
-
-  static async deleteRecruiter(req, res, next) {
-    try {
-      const { id } = req.user;
-      const { id: recruiterId } = req.body;
-      const deleteRecruiterQuery = `
-        DELETE FROM recruiters WHERE id = $1 AND company_id = $2;
-      `;
-
-      const { rowCount } = await client.query(deleteRecruiterQuery, [
-        recruiterId,
-        id,
-      ]);
-
-      if (rowCount === 0) {
-        return next(ApiError.NOT_FOUND("Рекрутер не найден"));
-      }
-
-      return ApiResponse.OK(res, "рекрутера выдалено");
-    } catch (error) {
-      console.error(
-        "Ошибка при удалении рекрутера конкретной компании:",
-        error.message
-      );
-      return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
-    }
-  }
-
-  /**
    * Получение рекрутера по email.
    */
   static async getRecruiterByEmail(email) {

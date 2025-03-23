@@ -7,6 +7,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+# Копируем общие модули
+COPY helpers ./helpers
+COPY edgrpou ./edgrpou
+COPY httpResponse ./httpResponse
+COPY common ./common
 
 EXPOSE 8881
 

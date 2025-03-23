@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS students_job_info(
 CREATE TABLE IF NOT EXISTS students_education_info(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    universities_id UUID NOT NULL REFERENCES universities(id) ON DELETE NO ACTION,
+    universities_id UUID NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
     education VARCHAR(100)
 );
 

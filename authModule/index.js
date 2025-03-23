@@ -41,7 +41,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", mainRouter);
-// app.use(adminRouter);
 
 app.use(errorHandler);
 app.use(responseHandler);
