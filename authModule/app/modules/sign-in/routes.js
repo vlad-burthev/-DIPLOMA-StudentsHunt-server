@@ -5,3 +5,5 @@ import { SignIn } from "./sign-in.js";
 export const authRoutes = new Router();
 
 authRoutes.post("/sign-in", signInValidator, SignIn.signIn);
+
+authRoutes.post("/activate", signInValidator, SignIn.activateUser);

@@ -1,8 +1,8 @@
-DROP TABLE IF EXISTS vacancies;
-DROP TABLE IF EXISTS recruiters;
+DROP TABLE IF EXISTS vacancies CASCADE;
+DROP TABLE IF EXISTS recruiters CASCADE;
 DROP TABLE IF EXISTS egrpou_info;
-DROP TABLE IF EXISTS companies_info;
-DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS companies_info CASCADE;
+DROP TABLE IF EXISTS companies CASCADE;
 
 
 
@@ -30,7 +30,7 @@ CREATE TABLE companies_info (
 CREATE TABLE IF NOT EXISTS egrpou_info(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    egrpou VARCHAR(15) UNIQUE,
+    egrpou CHAR(8) NOT NULL UNIQUE CHECK (egrpou ~ '^[0-9]{8}$'),
     name VARCHAR(255)NOT NULL UNIQUE,
     name_short VARCHAR(255)NOT NULL UNIQUE,
     address VARCHAR(255)NOT NULL UNIQUE,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS vacancies(
     requirements TEXT[] NOT NULL,
     salary_from INT NOT NULL CHECK (salary_from < 999999),
     salary_to INT NOT NULL CHECK (salary_to > 0 AND salary_to < 999999),
-    currency CHAR(1) NOT NULL CHECK (currency IN ('$', '€', '₴')),
+    currency CHAR(6) NOT NULL,
     location VARCHAR(100) NOT NULL, 
     is_active BOOLEAN DEFAULT true, 
     work_type INTEGER NOT NULL REFERENCES work_types(id) ON DELETE NO ACTION,
