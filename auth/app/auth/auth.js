@@ -1,48 +1,25 @@
 import { configDotenv } from "dotenv";
-import client from "../../../db.config.js";
-import { ApiError, ApiResponse } from "../../httpResponse/httpResponse.js";
-import bcrypt from "bcrypt";
+import client from "../../db.config.js";
+import { ApiError } from "../httpResponse/httpResponse.js";
 import jwt from "jsonwebtoken";
+import { Router } from "express";
+import { signInService } from "./services/sign-in.service.js";
 
 configDotenv();
 
-export class SignIn {
-  static async signIn(req, res, next) {
-    try {
-      const { email, password } = req.body;
-      const user = await SignIn.findUserByEmail(email);
+export class AuthController {
+  static authRouter = new Router();
 
-      if (!user) {
-        return next(ApiError.UNAUTHORIZED("Неправильний email або пароль"));
-      }
+  static async signInController(req, res, next) {
+    const { email } = req.body;
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return next(ApiError.UNAUTHORIZED("Неправильный email или пароль"));
-      }
+    const existedUser = await AuthController.findUserByEmail(email);
 
-      const token = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-          role_id: user.role_id,
-        },
-        process.env.JWT_SECRET_KEY,
-        { expiresIn: "1h" }
-      );
-
-      req.user = user;
-
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 3600000,
-        sameSite: "strict",
-      });
-
-      return ApiResponse.OK(res, { message: "Авторизовано" });
-    } catch (error) {
-      return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
+    if (!existedUser) {
+      return next(ApiError.UNAUTHORIZED("Користувача незнайдено"));
     }
+
+    return signInService(req, res, next, existedUser);
   }
 
   static async activateUser(req, res, next) {
@@ -60,7 +37,7 @@ export class SignIn {
       }
       const email = decoded.email;
 
-      const user = await SignIn.findUserByEmail(email);
+      const user = await Auth.findUserByEmail(email);
       if (!user) {
         return next(ApiError.BAD_REQUEST("Компания не найдена"));
       }

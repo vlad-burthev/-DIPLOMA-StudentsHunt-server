@@ -11,7 +11,7 @@ import { mainRouter } from "./app/router/main-router.js";
 import {
   errorHandler,
   responseHandler,
-} from "../httpResponse/httpResponseHandler.middleware.js";
+} from "./app/httpResponse/httpResponseHandler.middleware.js";
 
 configDotenv();
 

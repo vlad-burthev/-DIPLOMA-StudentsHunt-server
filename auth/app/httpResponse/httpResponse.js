@@ -1,5 +1,5 @@
 export class ApiError extends Error {
-  constructor(status = 500, code = "INTERNAL_SERVER_ERROR", { message }) {
+  constructor(status, code, { message }) {
     super(message);
     this.status = status;
     this.code = code;
@@ -15,6 +15,7 @@ export class ApiError extends Error {
   }
 
   static UNAUTHORIZED(message) {
+    console.log(new ApiError(401, "UNAUTHORIZED", { message }));
     return new ApiError(401, "UNAUTHORIZED", { message });
   }
 
