@@ -5,11 +5,9 @@ import {
 import client from "../../../db.config.js";
 import bcrypt from "bcrypt";
 import CloudinaryService from "../../../../services/cloudnary.service.js";
-import { checkEGRPOUCode } from "../../../../services/egrpou.service.js";
 import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
-import { MailService } from "../../../../services/mail.service.js";
-import { validationResult } from "express-validator";
+import { CompanyService } from "./company.service.js";
 
 configDotenv();
 
@@ -17,167 +15,143 @@ export class CompanyController {
   /**
    * Создание компании с использованием транзакции
    */
-  static async createCompany(req, res, next) {
+  async createCompany(req, res, next) {
     try {
-      // Проверка валидности запроса
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      const company = await CompanyService.createCompany(req.body);
+      return res
+        .status(201)
+        .json(new ApiResponse(201, "Company created successfully", company));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCompanyById(req, res, next) {
+    try {
+      const company = await CompanyService.getCompanyById(req.params.id);
+      if (!company) {
+        throw new ApiError(404, "Company not found");
       }
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Company retrieved successfully", company));
+    } catch (error) {
+      next(error);
+    }
+  }
 
-      // Проверка существования компании по email, title или EGRPOU
-      const queryGetCompanyByTitle = `
-        SELECT * FROM companies_info
-        WHERE title = $1
-      `;
-      const queryGetCompanyByEgrpou = `
-        SELECT * FROM egrpou_info
-        WHERE egrpou = $1
-      `;
-      const { accounts } = await CompanyController.checkRegistratedAccByEmail(
-        req.body.email
+  async updateCompany(req, res, next) {
+    try {
+      const company = await CompanyService.updateCompany(
+        req.params.id,
+        req.body
       );
+      if (!company) {
+        throw new ApiError(404, "Company not found");
+      }
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Company updated successfully", company));
+    } catch (error) {
+      next(error);
+    }
+  }
 
-      const { rows: rowsByTitle } = await client.query(queryGetCompanyByTitle, [
-        req.body.title,
-      ]);
-      const { rows: rowsByEgrpou } = await client.query(
-        queryGetCompanyByEgrpou,
-        [req.body.egrpou]
+  async deleteCompany(req, res, next) {
+    try {
+      const company = await CompanyService.deleteCompany(req.params.id);
+      if (!company) {
+        throw new ApiError(404, "Company not found");
+      }
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Company deleted successfully"));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCompanies(req, res, next) {
+    try {
+      const { companies, pagination } = await CompanyService.getCompanies(
+        req.query
       );
+      return res.status(200).json(
+        new ApiResponse(200, "Companies retrieved successfully", {
+          companies,
+          pagination,
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 
-      if (accounts > 0 || rowsByTitle.length > 0 || rowsByEgrpou.length > 0) {
-        return next(
-          ApiError.UNAUTHORIZED(
-            "Компания с таким email или названием уже существует"
+  async getCompanyVacancies(req, res, next) {
+    try {
+      const { vacancies, pagination } =
+        await CompanyService.getCompanyVacancies(req.params.id, req.query);
+      return res.status(200).json(
+        new ApiResponse(200, "Company vacancies retrieved successfully", {
+          vacancies,
+          pagination,
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCompanyRecruiters(req, res, next) {
+    try {
+      const { recruiters, pagination } =
+        await CompanyService.getCompanyRecruiters(req.params.id, req.query);
+      return res.status(200).json(
+        new ApiResponse(200, "Company recruiters retrieved successfully", {
+          recruiters,
+          pagination,
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCompanyStatus(req, res, next) {
+    try {
+      const company = await CompanyService.updateCompanyStatus(
+        req.params.id,
+        req.body.status
+      );
+      if (!company) {
+        throw new ApiError(404, "Company not found");
+      }
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Company status updated successfully", company)
+        );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCompanyStatistics(req, res, next) {
+    try {
+      const statistics = await CompanyService.getCompanyStatistics(
+        req.params.id
+      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            "Company statistics retrieved successfully",
+            statistics
           )
         );
-      }
-
-      // Проверка корректности EGRPOU
-      const egrpouInfo = await checkEGRPOUCode(req.body.egrpou);
-      if (egrpouInfo instanceof Error) {
-        return next(ApiError.BAD_REQUEST(egrpouInfo.message));
-      }
-
-      // Проверка наличия файла фото
-      if (!req.file) {
-        return next(ApiError.BAD_REQUEST("Файл не найден"));
-      }
-
-      // Загрузка изображения в Cloudinary
-      let photoUrl = null;
-      try {
-        const result = await CloudinaryService.uploadImage(
-          req.file,
-          "company",
-          "image"
-        );
-        photoUrl = result.secure_url;
-      } catch (uploadError) {
-        console.error("Ошибка загрузки изображения:", uploadError);
-        return next(ApiError.INTERNAL_SERVER_ERROR("Ошибка загрузки фото"));
-      }
-
-      // Начало транзакции
-      await client.query("BEGIN");
-
-      // Генерация активационной ссылки (используем подписанный токен)
-      const activationLink = jwt.sign(
-        { email: req.body.email },
-        process.env.JWT_SECRET_KEY,
-        { expiresIn: "1d" }
-      );
-
-      // Хеширование пароля (асинхронно)
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-      // Вставка основной информации о компании
-      const queryInsertCompany = `
-        INSERT INTO companies (email, password, activationLink)
-        VALUES ($1, $2, $3)
-        RETURNING *;
-      `;
-      const { rows } = await client.query(queryInsertCompany, [
-        req.body.email,
-        hashedPassword,
-        activationLink,
-      ]);
-      const newCompany = rows[0];
-
-      // Отправка письма активации
-      const activationUrl = `${process.env.API_URL}api/company/activate/${activationLink}`;
-      await new MailService().sendActivationMail(req.body.email, activationUrl);
-
-      // Вставка данных EGRPOU
-      const egrpouValues = [
-        newCompany.id,
-        req.body.egrpou,
-        egrpouInfo.name,
-        egrpouInfo.name_short,
-        egrpouInfo.address,
-        egrpouInfo.director,
-        egrpouInfo.kved,
-        egrpouInfo.inn,
-        egrpouInfo.inn_date,
-        egrpouInfo.last_update,
-      ];
-      await client.query(
-        `
-        INSERT INTO egrpou_info (
-          company_id, egrpou, name, name_short, address, director, kved, inn, inn_date, last_update
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-        );
-        `,
-        egrpouValues
-      );
-
-      // Вставка дополнительной информации о компании
-      await client.query(
-        `
-        INSERT INTO companies_info (company_id, phone, title, photo, description)
-        VALUES ($1, $2, $3, $4, $5);
-        `,
-        [
-          newCompany.id,
-          req.body.phone,
-          req.body.title,
-          photoUrl,
-          req.body.description,
-        ]
-      );
-
-      // Фиксируем транзакцию
-      await client.query("COMMIT");
-
-      // Генерация токена для сессии
-      const token = jwt.sign(
-        {
-          id: newCompany.id,
-          email: newCompany.email,
-          role_id: newCompany.role_id,
-        },
-        process.env.JWT_SECRET_KEY,
-        {
-          expiresIn: "1h",
-        }
-      );
-      if (!token) {
-        return next(ApiError.BAD_REQUEST("Не удалось создать токен"));
-      }
-
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 3600000,
-        sameSite: "strict",
-      });
-
-      return ApiResponse.OK(res, newCompany);
     } catch (error) {
-      await client.query("ROLLBACK");
-      console.error("Ошибка создания компании:", error.message);
-      return next(ApiError.INTERNAL_SERVER_ERROR(error.message));
+      next(error);
     }
   }
 
@@ -318,10 +292,10 @@ export class CompanyController {
       }
 
       // Обновляем статус активации компании
-      await client.query(
-        `UPDATE companies SET activationLink = NULL, activated = TRUE WHERE email = $1`,
-        [email]
-      );
+      // await client.query(
+      //   `UPDATE companies SET activationLink = NULL, activated = TRUE WHERE email = $1`,
+      //   [email]
+      // );
 
       // Генерируем токен для сессии после активации
       const token = jwt.sign(

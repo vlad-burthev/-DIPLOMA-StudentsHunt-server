@@ -1,10 +1,17 @@
-import { Router } from "express";
-import { companyRoutes } from "../modules/company/routes.js";
-import { recruiterRoutes } from "../modules/recruiter/routes.js";
-import { vacancyRoutes } from "../modules/vacancy/routes.js";
+import express from "express";
+import companyRoutes from "../modules/company/company.routes.js";
+import applicationRoutes from "../modules/application/application.routes.js";
+import { handleUploadError } from "../middlewares/upload.middleware.js";
 
-export const mainRouter = new Router();
+const router = express.Router();
 
-mainRouter.use("/company", companyRoutes);
-mainRouter.use("/recruiter", recruiterRoutes);
-mainRouter.use("/vacancy", vacancyRoutes);
+// Company routes
+router.use("/companies", companyRoutes);
+
+// Application routes
+router.use("/applications", applicationRoutes);
+
+// Error handling for file uploads
+router.use(handleUploadError);
+
+export default router;

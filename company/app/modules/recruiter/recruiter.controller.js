@@ -6,6 +6,7 @@ import client from "../../../db.config.js";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { RecruiterService } from "./recruiter.service.js";
 
 const QUERIES = {
   FIND_EXISTING_VACANCY: `
@@ -215,5 +216,99 @@ export class RecruiterController {
       throw ApiError.BAD_REQUEST("Рекрутер не найден");
     }
     return rows[0];
+  }
+
+  async createRecruiter(req, res, next) {
+    try {
+      const recruiter = await RecruiterService.createRecruiter(
+        req.user.id,
+        req.body
+      );
+      return res
+        .status(201)
+        .json(
+          new ApiResponse(201, "Recruiter created successfully", recruiter)
+        );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRecruiterById(req, res, next) {
+    try {
+      const recruiter = await RecruiterService.getRecruiterById(req.params.id);
+      if (!recruiter) {
+        throw new ApiError(404, "Recruiter not found");
+      }
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Recruiter retrieved successfully", recruiter)
+        );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateRecruiter(req, res, next) {
+    try {
+      const recruiter = await RecruiterService.updateRecruiter(
+        req.params.id,
+        req.body
+      );
+      if (!recruiter) {
+        throw new ApiError(404, "Recruiter not found");
+      }
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Recruiter updated successfully", recruiter)
+        );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteRecruiter(req, res, next) {
+    try {
+      const recruiter = await RecruiterService.deleteRecruiter(req.params.id);
+      if (!recruiter) {
+        throw new ApiError(404, "Recruiter not found");
+      }
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Recruiter deleted successfully"));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCompanyRecruiters(req, res, next) {
+    try {
+      const { recruiters, pagination } =
+        await RecruiterService.getCompanyRecruiters(req.user.id, req.query);
+      return res.status(200).json(
+        new ApiResponse(200, "Company recruiters retrieved successfully", {
+          recruiters,
+          pagination,
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async acceptInvitation(req, res, next) {
+    try {
+      const { token } = req.params;
+      const recruiter = await RecruiterService.acceptInvitation(token);
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Invitation accepted successfully", recruiter)
+        );
+    } catch (error) {
+      next(error);
+    }
   }
 }

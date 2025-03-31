@@ -6,5 +6,5 @@ import { checkAuthMiddleware } from "../middlewares/auth.middleware.js";
 export const authRoutes = new Router();
 
 authRoutes.post("/sign-in", signInValidator, AuthController.signIn);
-authRoutes.get("/activate/:activationLink", AuthController.activateUser);
+authRoutes.get("/activate/:activateLink", AuthController.activateUser);
 authRoutes.post("/check", checkAuthMiddleware, AuthController.checkAuth);

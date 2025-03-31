@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS companies(
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL, 
     activationLink VARCHAR(255) UNIQUE,
-    activated BOOLEAN DEFAULT false,
+    is_activated BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW(), 
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS vacancies(
     salary_to INT NOT NULL CHECK (salary_to > 0 AND salary_to < 999999),
     currency CHAR(6) NOT NULL,
     location VARCHAR(100) NOT NULL, 
-    is_active BOOLEAN DEFAULT true, 
+    is_activated BOOLEAN DEFAULT true, 
     work_type INTEGER NOT NULL REFERENCES work_types(id) ON DELETE NO ACTION,
     created_at TIMESTAMP DEFAULT NOW(), 
     updated_at TIMESTAMP DEFAULT NOW()

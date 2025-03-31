@@ -24,11 +24,13 @@ export async function activateUserService(req, res, next) {
       return next(ApiError.BAD_REQUEST("Компания не найдена"));
     }
 
-    // Обновляем статус активации компании
-    await client.query(
-      `UPDATE companies SET activationLink = NULL, activated = TRUE WHERE email = $1`,
-      [email]
-    );
+    // // Обновляем статус активации компании
+    // await client.query(
+    //   `UPDATE companies SET activationLink = NULL, is_activated = TRUE WHERE email = $1`,
+    //   [email]
+    // );
+
+    console.log("header");
 
     // Генерируем токен для сессии после активации
     const token = jwt.sign(

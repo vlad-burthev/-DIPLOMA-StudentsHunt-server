@@ -1,5 +1,5 @@
 -- Вставка компаний
-INSERT INTO companies (id, email, password, activationLink, activated)
+INSERT INTO companies (id, email, password, activationLink, is_activated)
 VALUES 
   ('00000000-0000-0000-0000-000000000001', 'company1@example.com', 'pass1', 'http://activate.com/1', true),
   ('00000000-0000-0000-0000-000000000002', 'company2@example.com', 'pass2', 'http://activate.com/2', true),

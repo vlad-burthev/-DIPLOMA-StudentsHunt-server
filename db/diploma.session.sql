@@ -9,7 +9,7 @@ INSERT INTO vacancies (
     salary_to,
     currency,
     location,
-    is_active,
+    is_activated,
     work_type,
     created_at,
     updated_at
