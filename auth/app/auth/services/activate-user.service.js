@@ -2,6 +2,7 @@ import { ApiError } from "../../httpResponse/httpResponse.js";
 import { configDotenv } from "dotenv";
 import jwt from "jsonwebtoken";
 import { AuthController } from "../auth.js";
+import client from "../../../db.config.js";
 
 configDotenv();
 
@@ -21,16 +22,15 @@ export async function activateUserService(req, res, next) {
 
     const user = await AuthController.findUserByEmail(email);
     if (!user) {
+      console.log("here");
       return next(ApiError.BAD_REQUEST("Компания не найдена"));
     }
 
-    // // Обновляем статус активации компании
-    // await client.query(
-    //   `UPDATE companies SET activationLink = NULL, is_activated = TRUE WHERE email = $1`,
-    //   [email]
-    // );
-
-    console.log("header");
+    // Обновляем статус активации компании
+    await client.query(
+      `UPDATE companies SET activationLink = NULL, is_activated = TRUE WHERE email = $1`,
+      [email]
+    );
 
     // Генерируем токен для сессии после активации
     const token = jwt.sign(

@@ -61,16 +61,16 @@ export class AuthController {
           SELECT 'company' as entity_type, id, email, role_id, password, is_activated 
           FROM companies WHERE email = $1
           UNION ALL
-          SELECT 'student' as entity_type, id, email, role_id, password, is_activated 
+          SELECT 'student' as entity_type, id, email, role_id, password, true as is_activated 
           FROM students WHERE email = $1
           UNION ALL
           SELECT 'admin' as entity_type, id, email, role_id, NULL as password, true as is_activated 
           FROM admins WHERE email = $1
           UNION ALL
-          SELECT 'university' as entity_type, id, email, role_id, password, is_activated 
+          SELECT 'university' as entity_type, id, email, role_id, password, true as is_activated 
           FROM universities WHERE email = $1
           UNION ALL
-          SELECT 'recruiter' as entity_type, id, email, role_id, password, is_activated 
+          SELECT 'recruiter' as entity_type, id, email, role_id, password, true as is_activated 
           FROM recruiters WHERE email = $1
         `,
         [email]
@@ -83,8 +83,8 @@ export class AuthController {
       const user = rows[0];
 
       // Check if user is active
-      if (!user.is_activated) {
-        throw new Error("User account is not activated");
+      if (!user) {
+        throw new Error("User not found");
       }
 
       return user;

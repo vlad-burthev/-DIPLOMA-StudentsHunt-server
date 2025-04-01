@@ -8,13 +8,10 @@ const router = express.Router();
 router.get("/activate/:link", async (req, res, next) => {
   try {
     const { link } = req.params;
-    const activatedCompany = await AuthService.activateCompany(link);
+    const result = await AuthService.activateCompany(link);
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, "Company activated successfully", activatedCompany)
-      );
+    // Return success response
+    return res.status(200).json(new ApiResponse(200, result.message, result));
   } catch (error) {
     next(new ApiError(400, error.message));
   }

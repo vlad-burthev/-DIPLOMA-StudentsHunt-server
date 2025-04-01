@@ -14,6 +14,10 @@ export const authenticate = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
+    if (decoded.entity_type !== "STUDENT") {
+      throw new ApiError(403, "Access denied. Student privileges required.");
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

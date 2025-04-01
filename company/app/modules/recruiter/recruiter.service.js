@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import { CloudinaryService } from "../../../services/cloudinary.service.js";
 import { MailService } from "../../../services/mail.service.js";
+import ApiError from "../../../helpers/ApiError";
 
 configDotenv();
 
@@ -238,5 +239,263 @@ export class RecruiterService {
 
     const { rows } = await client.query(query, params);
     return rows[0].exists;
+  }
+
+  // Authentication
+  async login(email, password) {
+    const query = `
+      SELECT r.*, c.id as company_id, c.title as company_name 
+      FROM recruiters r
+      JOIN companies c ON r.company_id = c.id
+      WHERE r.email = $1
+    `;
+
+    const result = await client.query(query, [email]);
+    const recruiter = result.rows[0];
+
+    if (!recruiter) {
+      throw new ApiError(401, "Invalid credentials");
+    }
+
+    const isValidPassword = await bcrypt.compare(password, recruiter.password);
+    if (!isValidPassword) {
+      throw new ApiError(401, "Invalid credentials");
+    }
+
+    const token = jwt.sign(
+      { id: recruiter.id, email: recruiter.email, role: recruiter.role_id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "24h" }
+    );
+
+    return {
+      token,
+      recruiter: {
+        id: recruiter.id,
+        email: recruiter.email,
+        name: recruiter.name,
+        surname: recruiter.surname,
+        photo: recruiter.photo,
+        company_id: recruiter.company_id,
+        company_name: recruiter.company_name,
+      },
+    };
+  }
+
+  async logout(token) {
+    // In a real application, you might want to blacklist the token
+    return { message: "Logged out successfully" };
+  }
+
+  // Vacancy Management
+  async createVacancy(recruiterId, vacancyData) {
+    const {
+      title,
+      description,
+      requirements,
+      salary_from,
+      salary_to,
+      currency,
+      location,
+      work_type,
+    } = vacancyData;
+
+    const query = `
+      INSERT INTO vacancies (
+        company_id, recruiter_id, title, description, requirements,
+        salary_from, salary_to, currency, location, work_type
+      )
+      SELECT c.id, $1, $2, $3, $4, $5, $6, $7, $8, $9
+      FROM recruiters r
+      JOIN companies c ON r.company_id = c.id
+      WHERE r.id = $1
+      RETURNING *
+    `;
+
+    const values = [
+      recruiterId,
+      title,
+      description,
+      requirements,
+      salary_from,
+      salary_to,
+      currency,
+      location,
+      work_type,
+    ];
+    const result = await client.query(query, values);
+
+    return result.rows[0];
+  }
+
+  async updateVacancy(recruiterId, vacancyId, vacancyData) {
+    const {
+      title,
+      description,
+      requirements,
+      salary_from,
+      salary_to,
+      currency,
+      location,
+      work_type,
+      is_activated,
+    } = vacancyData;
+
+    const query = `
+      UPDATE vacancies v
+      SET title = COALESCE($1, v.title),
+        description = COALESCE($2, v.description),
+        requirements = COALESCE($3, v.requirements),
+        salary_from = COALESCE($4, v.salary_from),
+        salary_to = COALESCE($5, v.salary_to),
+        currency = COALESCE($6, v.currency),
+        location = COALESCE($7, v.location),
+        work_type = COALESCE($8, v.work_type),
+        is_activated = COALESCE($9, v.is_activated),
+        updated_at = NOW()
+      FROM recruiters r
+      WHERE v.id = $10 AND v.recruiter_id = r.id AND r.id = $11
+      RETURNING v.*
+    `;
+
+    const values = [
+      title,
+      description,
+      requirements,
+      salary_from,
+      salary_to,
+      currency,
+      location,
+      work_type,
+      is_activated,
+      vacancyId,
+      recruiterId,
+    ];
+    const result = await client.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, "Vacancy not found");
+    }
+
+    return result.rows[0];
+  }
+
+  async deleteVacancy(recruiterId, vacancyId) {
+    const query = `
+      DELETE FROM vacancies v
+      USING recruiters r
+      WHERE v.id = $1 AND v.recruiter_id = r.id AND r.id = $2
+      RETURNING v.id
+    `;
+
+    const result = await client.query(query, [vacancyId, recruiterId]);
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, "Vacancy not found");
+    }
+
+    return { message: "Vacancy deleted successfully" };
+  }
+
+  // Applications Management
+  async getApplications(recruiterId, vacancyId = null) {
+    let query = `
+      SELECT a.*, v.title as vacancy_title, s.name as student_name, s.surname as student_surname
+      FROM applications a
+      JOIN vacancies v ON a.vacancy_id = v.id
+      JOIN students s ON a.student_id = s.id
+      JOIN recruiters r ON v.recruiter_id = r.id
+      WHERE r.id = $1
+    `;
+
+    let values = [recruiterId];
+
+    if (vacancyId) {
+      query += " AND v.id = $2";
+      values.push(vacancyId);
+    }
+
+    query += " ORDER BY a.created_at DESC";
+
+    const result = await client.query(query, values);
+    return result.rows;
+  }
+
+  async updateApplicationStatus(recruiterId, applicationId, status) {
+    const query = `
+      UPDATE applications a
+      SET status = $1, updated_at = NOW()
+      FROM vacancies v
+      JOIN recruiters r ON v.recruiter_id = r.id
+      WHERE a.id = $2 AND a.vacancy_id = v.id AND r.id = $3
+      RETURNING a.*
+    `;
+
+    const result = await client.query(query, [
+      status,
+      applicationId,
+      recruiterId,
+    ]);
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, "Application not found");
+    }
+
+    return result.rows[0];
+  }
+
+  // Candidates Management
+  async getAllCandidates(recruiterId) {
+    const query = `
+      SELECT DISTINCT s.*, 
+             COUNT(a.id) as total_applications,
+             MAX(a.created_at) as last_application_date
+      FROM students s
+      LEFT JOIN applications a ON s.id = a.student_id
+      LEFT JOIN vacancies v ON a.vacancy_id = v.id
+      LEFT JOIN recruiters r ON v.recruiter_id = r.id
+      WHERE r.id = $1
+      GROUP BY s.id
+      ORDER BY s.created_at DESC
+    `;
+
+    const result = await client.query(query, [recruiterId]);
+    return result.rows;
+  }
+
+  async getCandidatesWithApplications(recruiterId) {
+    const query = `
+      SELECT DISTINCT s.*, 
+             COUNT(a.id) as total_applications,
+             MAX(a.created_at) as last_application_date,
+             MAX(a.status) as last_application_status
+      FROM students s
+      JOIN applications a ON s.id = a.student_id
+      JOIN vacancies v ON a.vacancy_id = v.id
+      JOIN recruiters r ON v.recruiter_id = r.id
+      WHERE r.id = $1
+      GROUP BY s.id
+      ORDER BY s.created_at DESC
+    `;
+
+    const result = await client.query(query, [recruiterId]);
+    return result.rows;
+  }
+
+  // Statistics
+  async getRecruiterStatistics(recruiterId) {
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM vacancies WHERE recruiter_id = $1) as total_vacancies,
+        (SELECT COUNT(*) FROM vacancies WHERE recruiter_id = $1 AND is_activated = true) as active_vacancies,
+        (SELECT COUNT(*) FROM applications WHERE vacancy_id IN (SELECT id FROM vacancies WHERE recruiter_id = $1)) as total_applications,
+        (SELECT COUNT(*) FROM applications WHERE vacancy_id IN (SELECT id FROM vacancies WHERE recruiter_id = $1) AND status = 'pending') as pending_applications,
+        (SELECT COUNT(*) FROM applications WHERE vacancy_id IN (SELECT id FROM vacancies WHERE recruiter_id = $1) AND status = 'accepted') as accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE vacancy_id IN (SELECT id FROM vacancies WHERE recruiter_id = $1) AND status = 'rejected') as rejected_applications,
+        (SELECT COUNT(DISTINCT student_id) FROM applications WHERE vacancy_id IN (SELECT id FROM vacancies WHERE recruiter_id = $1)) as unique_candidates
+    `;
+
+    const result = await client.query(query, [recruiterId]);
+    return result.rows[0];
   }
 }

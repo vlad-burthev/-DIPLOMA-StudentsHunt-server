@@ -1,12 +1,18 @@
 # Dockerfile for a Node.js service
-FROM node:18
+FROM node:18-alpine
 
-WORKDIR /
+WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy source code
 COPY . .
 
-CMD ["npm", "run", "start"]
+# Expose port
+EXPOSE 8883
+
+# Start the application
+CMD ["npm", "start"]
 

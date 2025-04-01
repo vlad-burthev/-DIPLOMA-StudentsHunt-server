@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import { MailService } from "../../../../services/mail.service.js";
 import { validationResult } from "express-validator";
+import { UniversityService } from "./university.service.js";
 configDotenv();
 
 export class UniversityController {
@@ -247,5 +248,140 @@ export class UniversityController {
     );
 
     return universities + companies;
+  }
+
+  static async login(req, res, next) {
+    try {
+      const { email, password } = req.body;
+      const result = await UniversityService.login(email, password);
+      return ApiResponse.success(res, "Login successful", result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async register(req, res, next) {
+    try {
+      const university = await UniversityService.register(req.body);
+      return ApiResponse.success(
+        res,
+        "University registered successfully",
+        university,
+        201
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUniversityById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const university = await UniversityService.getUniversityById(id);
+      return ApiResponse.success(
+        res,
+        "University retrieved successfully",
+        university
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateUniversity(req, res, next) {
+    try {
+      const { id } = req.params;
+      const university = await UniversityService.updateUniversity(id, req.body);
+      return ApiResponse.success(
+        res,
+        "University updated successfully",
+        university
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteUniversity(req, res, next) {
+    try {
+      const { id } = req.params;
+      const university = await UniversityService.deleteUniversity(id);
+      return ApiResponse.success(
+        res,
+        "University deleted successfully",
+        university
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUniversities(req, res, next) {
+    try {
+      const { page = 1, limit = 10, search } = req.query;
+      const result = await UniversityService.getUniversities({
+        page: parseInt(page),
+        limit: parseInt(limit),
+        search,
+      });
+      return ApiResponse.success(
+        res,
+        "Universities retrieved successfully",
+        result
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateUniversityStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const university = await UniversityService.updateUniversityStatus(
+        id,
+        status
+      );
+      return ApiResponse.success(
+        res,
+        "University status updated successfully",
+        university
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUniversityStudents(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { page = 1, limit = 10, search } = req.query;
+      const result = await UniversityService.getUniversityStudents(id, {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        search,
+      });
+      return ApiResponse.success(
+        res,
+        "University students retrieved successfully",
+        result
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUniversityStatistics(req, res, next) {
+    try {
+      const { id } = req.params;
+      const statistics = await UniversityService.getUniversityStatistics(id);
+      return ApiResponse.success(
+        res,
+        "University statistics retrieved successfully",
+        statistics
+      );
+    } catch (error) {
+      next(error);
+    }
   }
 }

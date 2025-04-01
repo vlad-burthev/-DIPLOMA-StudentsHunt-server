@@ -4,6 +4,7 @@ import {
   ApiResponse,
 } from "../../../../httpResponse/httpResponse.js";
 import client from "../../../db.config.js";
+import { AdminService } from "./admin.service.js";
 
 export const authenticate = (req, res, next) => {
   passport.authenticate("google", {
@@ -55,3 +56,122 @@ export const logout = (req, res, next) => {
     res.redirect("/");
   });
 };
+
+export class AdminController {
+  static async login(req, res, next) {
+    try {
+      const { email, password } = req.body;
+
+      const result = await AdminService.login(email, password);
+      res.status(200).json(
+        new ApiResponse(200, "Login successful", {
+          token: result.token,
+          admin: result.admin,
+        })
+      );
+    } catch (error) {
+      next(new ApiError(401, error.message));
+    }
+  }
+
+  static async getCompanies(req, res, next) {
+    try {
+      const { page = 1, limit = 10, search, status } = req.query;
+
+      const result = await AdminService.getCompanies({
+        page: parseInt(page),
+        limit: parseInt(limit),
+        search,
+        status,
+      });
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, "Companies retrieved successfully", result));
+    } catch (error) {
+      next(new ApiError(500, error.message));
+    }
+  }
+
+  static async getStudents(req, res, next) {
+    try {
+      const { page = 1, limit = 10, search, status } = req.query;
+
+      const result = await AdminService.getStudents({
+        page: parseInt(page),
+        limit: parseInt(limit),
+        search,
+        status,
+      });
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, "Students retrieved successfully", result));
+    } catch (error) {
+      next(new ApiError(500, error.message));
+    }
+  }
+
+  static async updateCompanyStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!["active", "inactive"].includes(status)) {
+        throw new Error("Invalid status. Must be 'active' or 'inactive'");
+      }
+
+      const result = await AdminService.updateCompanyStatus(
+        id,
+        status === "active"
+      );
+      res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Company status updated successfully", result)
+        );
+    } catch (error) {
+      next(new ApiError(500, error.message));
+    }
+  }
+
+  static async updateStudentStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!["active", "inactive"].includes(status)) {
+        throw new Error("Invalid status. Must be 'active' or 'inactive'");
+      }
+
+      const result = await AdminService.updateStudentStatus(
+        id,
+        status === "active"
+      );
+      res
+        .status(200)
+        .json(
+          new ApiResponse(200, "Student status updated successfully", result)
+        );
+    } catch (error) {
+      next(new ApiError(500, error.message));
+    }
+  }
+
+  static async getSystemStatistics(req, res, next) {
+    try {
+      const statistics = await AdminService.getSystemStatistics();
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            "System statistics retrieved successfully",
+            statistics
+          )
+        );
+    } catch (error) {
+      next(new ApiError(500, error.message));
+    }
+  }
+}

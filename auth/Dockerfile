@@ -3,12 +3,16 @@ FROM node:18
 
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy source code
 COPY . .
 
-EXPOSE 8881
+# Expose port
+EXPOSE 8886
 
-CMD ["npm", "run", "start"]
+# Start the application
+CMD ["npm", "start"]
 

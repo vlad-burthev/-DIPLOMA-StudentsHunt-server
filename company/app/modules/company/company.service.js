@@ -90,7 +90,7 @@ export class CompanyService {
       );
 
       // Send activation email
-      const activationUrl = `${process.env.API_URL}api/company/activate/${activationLink}`;
+      const activationUrl = `${process.env.API_AUTH}api/auth/activate/${activationLink}`;
       await new MailService().sendActivationMail(email, activationUrl);
 
       // Commit transaction

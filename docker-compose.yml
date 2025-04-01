@@ -1,81 +1,196 @@
+version: "3.8"
+
 services:
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    ports:
+      - "8886:8886"
+    volumes:
+      - ./auth:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=8886
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_DIALECT=${DB_DIALECT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - CLIENT_URL=${CLIENT_URL}
+    depends_on:
+      - db
+    networks:
+      - app-network
+
   admin:
     build:
       context: ./admin
+      dockerfile: Dockerfile
     ports:
       - "8888:8888"
     volumes:
       - ./admin:/app
-      - /node_modules
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=8888
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
+      - DB_DIALECT=${DB_DIALECT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - CALLBACK_URL=${CALLBACK_URL}
+    depends_on:
+      - db
+    networks:
+      - app-network
 
   company:
     build:
       context: ./company
+      dockerfile: Dockerfile
     ports:
       - "8881:8881"
     volumes:
       - ./company:/app
-      - ./helpers:../helpers
-      - ./edgrpou:../edgrpou
-      - ./httpResponse:../httpResponse
-      - ./common:../common
-      - /node_modules
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=8881
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
+      - DB_DIALECT=${DB_DIALECT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - CLOUDINARY_DIR_COMPANY=${CLOUDINARY_DIR_COMPANY}
+      - CLOUDINARY_DIR_RECRUITER=${CLOUDINARY_DIR_RECRUITER}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - CLIENT_URL=${CLIENT_URL}
+    depends_on:
+      - db
+    networks:
+      - app-network
 
   student:
     build:
       context: ./student
+      dockerfile: Dockerfile
     ports:
       - "8882:8882"
     volumes:
       - ./student:/app
-      - /node_modules
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=8882
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
+      - DB_DIALECT=${DB_DIALECT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - CLOUDINARY_DIR_STUDENT=${CLOUDINARY_DIR_STUDENT}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - CLIENT_URL=${CLIENT_URL}
+    depends_on:
+      - db
+    networks:
+      - app-network
 
   university:
     build:
       context: ./university
+      dockerfile: Dockerfile
     ports:
       - "8883:8883"
     volumes:
       - ./university:/app
-      - /node_modules
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=8883
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
+      - DB_DIALECT=${DB_DIALECT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - CLOUDINARY_DIR_UNIVERSITY=${CLOUDINARY_DIR_UNIVERSITY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - CLIENT_URL=${CLIENT_URL}
+    depends_on:
+      - db
+    networks:
+      - app-network
 
   db:
-    image: postgres:latest
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - default
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
 
 networks:
-  default:
+  app-network:
     driver: bridge

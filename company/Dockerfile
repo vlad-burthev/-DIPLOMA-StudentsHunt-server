@@ -3,17 +3,19 @@ FROM node:18
 
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy source code
 COPY . .
-# Копируем общие модули
-COPY helpers ./helpers
-COPY edgrpou ./edgrpou
-COPY httpResponse ./httpResponse
-COPY common ./common
 
+# Create directories for shared modules
+RUN mkdir -p /app/helpers /app/edgrpou /app/httpResponse /app/common
+
+# Expose port
 EXPOSE 8881
 
-CMD ["npm", "run", "start"]
+# Start the application
+CMD ["npm", "start"]
 
